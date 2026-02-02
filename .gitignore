@@ -1,0 +1,32 @@
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.log
+appsettings.Development.json
+
+# Build artifacts
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+
+# Test results
+[Tt]est[Rr]esults/
+
+# User-specific files
+*.userprefs
+*.csproj.user
+*.rsuser
+
+# Secrets and local configuration
+secrets.json
+appsettings.Local.json
+appsettings.*.local.json
+
+# Visual Studio and VS Code
+.vscode/
+
+# NuGet
+*.nupkg
+packages/

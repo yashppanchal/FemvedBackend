@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FemvedBackend.Api/FemvedBackend.Api.csproj" />
+    <Project Path="src/FemvedBackend.Application/FemvedBackend.Application.csproj" />
+    <Project Path="src/FemvedBackend.Domain/FemvedBackend.Domain.csproj" />
+    <Project Path="src/FemvedBackend.Infrastructure/FemvedBackend.Infrastructure.csproj" />
+  </Folder>
+</Solution>

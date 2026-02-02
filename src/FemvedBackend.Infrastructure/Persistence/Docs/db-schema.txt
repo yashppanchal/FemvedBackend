@@ -1,0 +1,150 @@
+﻿PostgreSQL Database Schema (public schema)
+
+TABLE: coupon_products
+- coupon_id (uuid)
+- product_id (uuid)
+
+TABLE: coupon_usages
+- coupon_id (uuid)
+- user_id (uuid)
+- order_id (uuid)
+- used_at (timestamp)
+
+TABLE: coupons
+- id (uuid)
+- code (varchar)
+- description (text)
+- discount_type (varchar)
+- discount_value (numeric)
+- max_usage (int)
+- max_usage_per_user (int)
+- valid_from (date)
+- valid_to (date)
+- is_active (boolean)
+- created_at (timestamp)
+
+TABLE: events
+- product_id (uuid)
+- location (varchar)
+- start_date (date)
+- end_date (date)
+- capacity (int)
+- gallery_urls (jsonb)
+
+TABLE: expert_products
+- id (uuid)
+- product_id (uuid)
+- experts_id (uuid)
+- duration_weeks (smallint)
+- price (numeric)
+- is_active (boolean)
+
+TABLE: experts
+- user_id (uuid)
+- bio (text)
+- specialization (text)
+- rating (numeric)
+- is_verified (boolean)
+
+TABLE: notification_templates
+- id (uuid)
+- name (varchar)
+- channel (varchar)
+- subject (text)
+- body (text)
+- is_active (boolean)
+
+TABLE: orders
+- id (uuid)
+- user_id (uuid)
+- total_amount (numeric)
+- currency_code (char)
+- status (varchar)
+- created_at (timestamp)
+
+TABLE: payment_gateways
+- id (smallint)
+- name (varchar)
+
+TABLE: payment_metadata
+- payment_id (uuid)
+- raw_response (jsonb)
+
+TABLE: payments
+- id (uuid)
+- order_id (uuid)
+- gateway_id (smallint)
+- amount (numeric)
+- currency_code (char)
+- status (varchar)
+- gateway_order_id (varchar)
+- gateway_payment_id (varchar)
+- initiated_at (timestamp)
+- completed_at (timestamp)
+
+TABLE: policies
+- id (int)
+- name (varchar)
+
+TABLE: product_types
+- id (smallint)
+- name (varchar)
+- description (text)
+
+TABLE: products
+- id (uuid)
+- product_type_id (smallint)
+- title (varchar)
+- description (text)
+- base_price (numeric)
+- currency_code (char)
+- is_active (boolean)
+- created_by (uuid)
+- created_at (timestamp)
+
+TABLE: recorded_contents
+- product_id (uuid)
+- trailer_url (text)
+- content_url (text)
+- content_type (varchar)
+- downloadable (boolean)
+
+TABLE: refunds
+- id (uuid)
+- payment_id (uuid)
+- amount (numeric)
+- reason (text)
+- status (varchar)
+- gateway_refund_id (varchar)
+- initiated_at (timestamp)
+- completed_at (timestamp)
+
+TABLE: role_policies
+- role_id (smallint)
+- policy_id (int)
+
+TABLE: roles
+- id (smallint)
+- name (varchar)
+- description (text)
+
+TABLE: user_product_access
+- user_id (uuid)
+- product_id (uuid)
+- start_date (date)
+- end_date (date)
+- status (varchar)
+
+TABLE: users
+- id (uuid)
+- email (varchar)
+- password_hash (text)
+- role_id (smallint)
+- first_name (varchar)
+- last_name (varchar)
+- country_code (char)
+- currency_code (char)
+- whatsapp_opt_in (boolean)
+- is_active (boolean)
+- created_at (timestamp)
+- updated_at (timestamp)

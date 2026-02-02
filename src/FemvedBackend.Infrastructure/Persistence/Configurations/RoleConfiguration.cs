@@ -1,0 +1,32 @@
+using FemvedBackend.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace FemvedBackend.Infrastructure.Persistence.Configurations;
+
+public sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
+{
+    public void Configure(EntityTypeBuilder<Role> builder)
+    {
+        builder.ToTable("roles");
+        builder.HasKey(role => role.Id);
+
+        builder.Property(role => role.Name)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(role => role.Type)
+            .IsRequired();
+
+        builder.HasIndex(role => role.Name)
+            .IsUnique();
+
+        builder.HasIndex(role => role.Type)
+            .IsUnique();
+
+        builder.HasMany(role => role.Users)
+            .WithOne(user => user.Role)
+            .HasForeignKey(user => user.RoleId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+}

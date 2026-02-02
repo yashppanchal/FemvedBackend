@@ -1,0 +1,27 @@
+using FemvedBackend.Api.Contracts.Authentication;
+using FluentValidation;
+
+namespace FemvedBackend.Api.Validation.Authentication;
+
+/// <summary>
+/// Validates reset password requests.
+/// </summary>
+public sealed class ResetPasswordRequestDtoValidator : AbstractValidator<ResetPasswordRequestDto>
+{
+    public ResetPasswordRequestDtoValidator()
+    {
+        RuleFor(request => request.Email)
+            .NotEmpty()
+            .WithMessage("Email is required.")
+            .EmailAddress()
+            .WithMessage("Email must be a valid email address.");
+
+        RuleFor(request => request.ResetToken)
+            .NotEmpty()
+            .WithMessage("Reset token is required.");
+
+        RuleFor(request => request.NewPassword)
+            .NotEmpty()
+            .WithMessage("New password is required.");
+    }
+}
