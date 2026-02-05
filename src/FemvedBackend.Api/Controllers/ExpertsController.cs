@@ -1,5 +1,4 @@
 using FemvedBackend.Api.Contracts.Experts;
-using FemvedBackend.Application.Identity;
 using FemvedBackend.Application.Interfaces.Repositories;
 using FemvedBackend.Application.UseCases.Experts;
 using Microsoft.AspNetCore.Authorization;
@@ -12,7 +11,6 @@ namespace FemvedBackend.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/experts")]
-[Authorize(Policy = PolicyNames.ExpertOnly)]
 public sealed class ExpertsController : ControllerBase
 {
     private readonly IExpertRepository _expertRepository;
@@ -28,12 +26,13 @@ public sealed class ExpertsController : ControllerBase
     /// Retrieves all experts.
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(IReadOnlyList<ExpertResponseDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<ExpertResponseDto>>> GetExperts(CancellationToken cancellationToken)
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(IReadOnlyList<ExpertProgramsResponseDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<ExpertProgramsResponseDto>>> GetExperts(CancellationToken cancellationToken)
     {
-        var experts = await _expertRepository.ListAsync(cancellationToken);
+        var experts = await _expertRepository.ListActiveWithProgramsAsync(cancellationToken);
         var response = experts
-            .Select(expert => new ExpertResponseDto(expert.Id, expert.UserId, expert.DisplayName, expert.Bio))
+            .Select(MapExpertPrograms)
             .ToList();
 
         return Ok(response);
@@ -43,17 +42,18 @@ public sealed class ExpertsController : ControllerBase
     /// Retrieves an expert by identifier.
     /// </summary>
     [HttpGet("{id:guid}")]
-    [ProducesResponseType(typeof(ExpertResponseDto), StatusCodes.Status200OK)]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ExpertProgramsResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ExpertResponseDto>> GetExpert(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<ExpertProgramsResponseDto>> GetExpert(Guid id, CancellationToken cancellationToken)
     {
-        var expert = await _expertRepository.GetByIdAsync(id, cancellationToken);
+        var expert = await _expertRepository.GetActiveWithProgramsAsync(id, cancellationToken);
         if (expert is null)
         {
             return NotFound();
         }
 
-        var response = new ExpertResponseDto(expert.Id, expert.UserId, expert.DisplayName, expert.Bio);
+        var response = MapExpertPrograms(expert);
         return Ok(response);
     }
 
@@ -67,10 +67,34 @@ public sealed class ExpertsController : ControllerBase
         [FromBody] CreateExpertRequestDto request,
         CancellationToken cancellationToken)
     {
-        var useCaseRequest = new CreateExpertRequest(request.UserId, request.DisplayName, request.Bio);
+        var useCaseRequest = new CreateExpertRequest(request.UserId, request.Bio, request.Specialization);
         var result = await _createExpertHandler.HandleAsync(useCaseRequest, cancellationToken);
 
-        var response = new ExpertResponseDto(result.ExpertId, result.UserId, result.DisplayName, result.Bio);
-        return CreatedAtAction(nameof(GetExpert), new { id = result.ExpertId }, response);
+        var response = new ExpertResponseDto(result.UserId, result.Bio, result.Specialization, result.Rating, result.IsVerified);
+        return CreatedAtAction(nameof(GetExpert), new { id = result.UserId }, response);
+    }
+
+    private static ExpertProgramsResponseDto MapExpertPrograms(ExpertProgramsResult expert)
+    {
+        var programs = expert.Programs
+            .Select(program => new ExpertProgramDto(
+                program.ProgramId,
+                program.Title,
+                program.Description,
+                program.ImageUrl,
+                program.Durations
+                    .Select(duration => new ExpertProgramDurationDto(
+                        duration.Weeks,
+                        duration.Price,
+                        duration.Discount,
+                        duration.FinalPrice))
+                    .ToList()))
+            .ToList();
+
+        return new ExpertProgramsResponseDto(
+            expert.ExpertId,
+            expert.ExpertName,
+            expert.Bio,
+            programs);
     }
 }

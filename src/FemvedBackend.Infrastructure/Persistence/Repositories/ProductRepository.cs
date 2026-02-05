@@ -20,6 +20,12 @@ public sealed class ProductRepository : IProductRepository
             .FirstOrDefaultAsync(product => product.Id == id, cancellationToken);
     }
 
+    public Task<Product?> GetByIdForOwnerAsync(Guid id, Guid ownerId, CancellationToken cancellationToken = default)
+    {
+        return _dbContext.Products
+            .FirstOrDefaultAsync(product => product.Id == id && product.CreatedBy == ownerId, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Product>> ListAsync(CancellationToken cancellationToken = default)
     {
         return await _dbContext.Products

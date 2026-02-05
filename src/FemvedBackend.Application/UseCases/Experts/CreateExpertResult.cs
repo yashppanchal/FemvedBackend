@@ -4,7 +4,8 @@ namespace FemvedBackend.Application.UseCases.Experts;
 /// Represents the result of creating an expert.
 /// </summary>
 public sealed record CreateExpertResult(
-    Guid ExpertId,
     Guid UserId,
-    string DisplayName,
-    string? Bio);
+    string? Bio,
+    string? Specialization,
+    decimal Rating,
+    bool IsVerified);

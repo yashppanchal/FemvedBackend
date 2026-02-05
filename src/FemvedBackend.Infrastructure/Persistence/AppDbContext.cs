@@ -1,5 +1,7 @@
+using FemvedBackend.Application.Exceptions;
 using FemvedBackend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace FemvedBackend.Infrastructure.Persistence;
 
@@ -17,6 +19,10 @@ public class AppDbContext : DbContext
     public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
     public DbSet<Expert> Experts => Set<Expert>();
     public DbSet<ExpertProduct> ExpertProducts => Set<ExpertProduct>();
+    public DbSet<global::FemvedBackend.Domain.Entities.Domain> Domains => Set<global::FemvedBackend.Domain.Entities.Domain>();
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Program> Programs => Set<Program>();
+    public DbSet<ProgramPricing> ProgramPricing => Set<ProgramPricing>();
     public DbSet<RecordedContent> RecordedContents => Set<RecordedContent>();
     public DbSet<Event> Events => Set<Event>();
     public DbSet<Order> Orders => Set<Order>();
@@ -30,6 +36,147 @@ public class AppDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<NotificationTemplate> NotificationTemplates => Set<NotificationTemplate>();
+
+    public override int SaveChanges()
+    {
+        ApplyAuditDefaults();
+        ValidateExpertProductRules();
+        return base.SaveChanges();
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        ApplyAuditDefaults();
+        await ValidateExpertProductRulesAsync(cancellationToken);
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void ApplyAuditDefaults()
+    {
+        var utcNow = DateTime.UtcNow;
+
+        foreach (var entry in ChangeTracker.Entries())
+        {
+            if (entry.State == EntityState.Added)
+            {
+                SetDateTimeProperty(entry, "CreatedAt", utcNow);
+                SetDateTimeProperty(entry, "UpdatedAt", utcNow);
+                SetBooleanProperty(entry, "IsActive", true);
+                SetBooleanProperty(entry, "WhatsappOptIn", false);
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                SetDateTimeProperty(entry, "UpdatedAt", utcNow);
+
+                if (entry.Metadata.FindProperty("CreatedAt") is not null)
+                {
+                    entry.Property("CreatedAt").IsModified = false;
+                }
+            }
+        }
+    }
+
+    private static void SetDateTimeProperty(EntityEntry entry, string propertyName, DateTime utcNow)
+    {
+        var property = entry.Metadata.FindProperty(propertyName);
+        if (property is null)
+        {
+            return;
+        }
+
+        var entryProperty = entry.Property(propertyName);
+        if (property.ClrType == typeof(DateTimeOffset) || property.ClrType == typeof(DateTimeOffset?))
+        {
+            entryProperty.CurrentValue = DateTimeOffset.UtcNow;
+            return;
+        }
+
+        if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+        {
+            entryProperty.CurrentValue = utcNow;
+        }
+    }
+
+    private static void SetBooleanProperty(EntityEntry entry, string propertyName, bool value)
+    {
+        var property = entry.Metadata.FindProperty(propertyName);
+        if (property is null)
+        {
+            return;
+        }
+
+        if (property.ClrType == typeof(bool) || property.ClrType == typeof(bool?))
+        {
+            entry.Property(propertyName).CurrentValue = value;
+        }
+    }
+
+    private void ValidateExpertProductRules()
+    {
+        var entries = ChangeTracker.Entries<ExpertProduct>()
+            .Where(entry => entry.State is EntityState.Added or EntityState.Modified)
+            .Select(entry => entry.Entity)
+            .ToList();
+
+        foreach (var expertProduct in entries)
+        {
+            EnsureNoDuplicateDuration(expertProduct);
+            EnsureFinalPriceMatchesDiscount(expertProduct);
+        }
+    }
+
+    private async Task ValidateExpertProductRulesAsync(CancellationToken cancellationToken)
+    {
+        var entries = ChangeTracker.Entries<ExpertProduct>()
+            .Where(entry => entry.State is EntityState.Added or EntityState.Modified)
+            .Select(entry => entry.Entity)
+            .ToList();
+
+        foreach (var expertProduct in entries)
+        {
+            await EnsureNoDuplicateDurationAsync(expertProduct, cancellationToken);
+            EnsureFinalPriceMatchesDiscount(expertProduct);
+        }
+    }
+
+    private void EnsureNoDuplicateDuration(ExpertProduct expertProduct)
+    {
+        var duplicateExists = ExpertProducts.Any(existing =>
+            existing.Id != expertProduct.Id
+            && existing.ProductId == expertProduct.ProductId
+            && existing.ExpertId == expertProduct.ExpertId
+            && existing.DurationWeeks == expertProduct.DurationWeeks);
+
+        if (duplicateExists)
+        {
+            throw new ValidationException("durationWeeks", "Duplicate duration weeks for this product.");
+        }
+    }
+
+    private async Task EnsureNoDuplicateDurationAsync(ExpertProduct expertProduct, CancellationToken cancellationToken)
+    {
+        var duplicateExists = await ExpertProducts.AnyAsync(existing =>
+            existing.Id != expertProduct.Id
+            && existing.ProductId == expertProduct.ProductId
+            && existing.ExpertId == expertProduct.ExpertId
+            && existing.DurationWeeks == expertProduct.DurationWeeks, cancellationToken);
+
+        if (duplicateExists)
+        {
+            throw new ValidationException("durationWeeks", "Duplicate duration weeks for this product.");
+        }
+    }
+
+    private static void EnsureFinalPriceMatchesDiscount(ExpertProduct expertProduct)
+    {
+        var expectedFinalPrice = expertProduct.OriginalPrice
+            - (expertProduct.OriginalPrice * expertProduct.DiscountPercentage / 100m);
+
+        if (expertProduct.FinalPrice != expectedFinalPrice)
+        {
+            throw new ValidationException("finalPrice", "Final price does not match discount calculation.");
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -76,7 +223,7 @@ public class AppDbContext : DbContext
 
             builder.Property(productType => productType.Id).HasColumnName("id");
             builder.Property(productType => productType.Name).HasColumnName("name");
-            builder.Property<string>("Description").HasColumnName("description");
+            builder.Property(productType => productType.Description).HasColumnName("description");
         });
 
         modelBuilder.Entity<Product>(builder =>
@@ -86,14 +233,12 @@ public class AppDbContext : DbContext
 
             builder.Property(product => product.Id).HasColumnName("id");
             builder.Property(product => product.ProductTypeId).HasColumnName("product_type_id");
-            builder.Property(product => product.Name).HasColumnName("title");
+            builder.Property(product => product.Title).HasColumnName("title");
             builder.Property(product => product.Description).HasColumnName("description");
-
-            builder.Property<decimal>("BasePrice").HasColumnName("base_price");
-            builder.Property<string>("CurrencyCode").HasColumnName("currency_code");
-            builder.Property<bool>("IsActive").HasColumnName("is_active");
-            builder.Property<Guid>("CreatedBy").HasColumnName("created_by");
-            builder.Property<DateTimeOffset>("CreatedAt").HasColumnName("created_at");
+            builder.Property(product => product.ImageUrl).HasColumnName("image_url");
+            builder.Property(product => product.IsActive).HasColumnName("is_active");
+            builder.Property(product => product.CreatedBy).HasColumnName("created_by");
+            builder.Property(product => product.CreatedAt).HasColumnName("created_at");
         });
 
         modelBuilder.Entity<ProductVariant>(builder =>
@@ -115,13 +260,9 @@ public class AppDbContext : DbContext
 
             builder.Property(expert => expert.UserId).HasColumnName("user_id");
             builder.Property(expert => expert.Bio).HasColumnName("bio");
-
-            builder.Property<string>("Specialization").HasColumnName("specialization");
-            builder.Property<decimal>("Rating").HasColumnName("rating");
-            builder.Property<bool>("IsVerified").HasColumnName("is_verified");
-
-            builder.Ignore(expert => expert.Id);
-            builder.Ignore(expert => expert.DisplayName);
+            builder.Property(expert => expert.Specialization).HasColumnName("specialization");
+            builder.Property(expert => expert.Rating).HasColumnName("rating");
+            builder.Property(expert => expert.IsVerified).HasColumnName("is_verified");
         });
 
         modelBuilder.Entity<ExpertProduct>(builder =>
@@ -131,11 +272,72 @@ public class AppDbContext : DbContext
 
             builder.Property(expertProduct => expertProduct.Id).HasColumnName("id");
             builder.Property(expertProduct => expertProduct.ProductId).HasColumnName("product_id");
-            builder.Property(expertProduct => expertProduct.ExpertId).HasColumnName("experts_id");
+            builder.Property(expertProduct => expertProduct.ExpertId).HasColumnName("expert_id");
+            builder.Property(expertProduct => expertProduct.DurationWeeks).HasColumnName("duration_weeks");
+            builder.Property(expertProduct => expertProduct.OriginalPrice).HasColumnName("original_price");
+            builder.Property(expertProduct => expertProduct.DiscountPercentage).HasColumnName("discount_percentage");
+            builder.Property(expertProduct => expertProduct.FinalPrice).HasColumnName("final_price");
+            builder.Property(expertProduct => expertProduct.CurrencyCode).HasColumnName("currency_code");
+            builder.Property(expertProduct => expertProduct.DisplayOrder).HasColumnName("display_order");
+            builder.Property(expertProduct => expertProduct.IsActive).HasColumnName("is_active");
 
-            builder.Property<short>("DurationWeeks").HasColumnName("duration_weeks");
-            builder.Property<decimal>("Price").HasColumnName("price");
-            builder.Property<bool>("IsActive").HasColumnName("is_active");
+            builder.HasIndex(expertProduct => new { expertProduct.ProductId, expertProduct.ExpertId, expertProduct.DurationWeeks })
+                .IsUnique();
+        });
+
+        modelBuilder.Entity<global::FemvedBackend.Domain.Entities.Domain>(builder =>
+        {
+            builder.ToTable("domains");
+            builder.HasKey(domain => domain.Id);
+
+            builder.Property(domain => domain.Id).HasColumnName("id");
+            builder.Property(domain => domain.Name).HasColumnName("name");
+            builder.Property(domain => domain.Description).HasColumnName("description");
+            builder.Property(domain => domain.IsActive).HasColumnName("is_active");
+        });
+
+        modelBuilder.Entity<Category>(builder =>
+        {
+            builder.ToTable("categories");
+            builder.HasKey(category => category.Id);
+
+            builder.Property(category => category.Id).HasColumnName("id");
+            builder.Property(category => category.DomainId).HasColumnName("domain_id");
+            builder.Property(category => category.ParentCategoryId).HasColumnName("parent_category_id");
+            builder.Property(category => category.Name).HasColumnName("name");
+            builder.Property(category => category.Description).HasColumnName("description");
+            builder.Property(category => category.DisplayOrder).HasColumnName("display_order");
+            builder.Property(category => category.IsActive).HasColumnName("is_active");
+        });
+
+        modelBuilder.Entity<Program>(builder =>
+        {
+            builder.ToTable("programs");
+            builder.HasKey(program => program.Id);
+
+            builder.Property(program => program.Id).HasColumnName("id");
+            builder.Property(program => program.CategoryId).HasColumnName("category_id");
+            builder.Property(program => program.ExpertId).HasColumnName("expert_id");
+            builder.Property(program => program.Title).HasColumnName("title");
+            builder.Property(program => program.Description).HasColumnName("description");
+            builder.Property(program => program.ImageUrl).HasColumnName("image_url");
+            builder.Property(program => program.IsActive).HasColumnName("is_active");
+            builder.Property(program => program.CreatedAt).HasColumnName("created_at");
+        });
+
+        modelBuilder.Entity<ProgramPricing>(builder =>
+        {
+            builder.ToTable("program_duration");
+            builder.HasKey(pricing => pricing.Id);
+
+            builder.Property(pricing => pricing.Id).HasColumnName("id");
+            builder.Property(pricing => pricing.ProgramId).HasColumnName("program_id");
+            builder.Property(pricing => pricing.DurationWeeks).HasColumnName("duration_weeks");
+            builder.Property(pricing => pricing.OriginalPrice).HasColumnName("original_price");
+            builder.Property(pricing => pricing.DiscountPercentage).HasColumnName("discount_percentage");
+            builder.Property(pricing => pricing.FinalPrice).HasColumnName("final_price");
+            builder.Property(pricing => pricing.CurrencyCode).HasColumnName("currency_code");
+            builder.Property(pricing => pricing.IsActive).HasColumnName("is_active");
         });
 
         modelBuilder.Entity<RecordedContent>(builder =>

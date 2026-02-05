@@ -13,11 +13,5 @@ public sealed class CreateExpertRequestDtoValidator : AbstractValidator<CreateEx
         RuleFor(request => request.UserId)
             .NotEmpty()
             .WithMessage("UserId is required.");
-
-        RuleFor(request => request.DisplayName)
-            .NotEmpty()
-            .WithMessage("Display name is required.")
-            .MaximumLength(150)
-            .WithMessage("Display name must be 150 characters or fewer.");
     }
 }

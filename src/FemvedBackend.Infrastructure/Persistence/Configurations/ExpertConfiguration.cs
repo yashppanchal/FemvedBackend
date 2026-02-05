@@ -9,17 +9,23 @@ public sealed class ExpertConfiguration : IEntityTypeConfiguration<Expert>
     public void Configure(EntityTypeBuilder<Expert> builder)
     {
         builder.ToTable("experts");
-        builder.HasKey(expert => expert.Id);
+        builder.HasKey(expert => expert.UserId);
 
-        builder.Property(expert => expert.DisplayName)
-            .HasMaxLength(150)
-            .IsRequired();
+        builder.Property(expert => expert.UserId)
+            .HasColumnName("user_id");
 
         builder.Property(expert => expert.Bio)
+            .HasColumnName("bio")
             .HasMaxLength(2000);
 
-        builder.HasIndex(expert => expert.UserId)
-            .IsUnique();
+        builder.Property(expert => expert.Specialization)
+            .HasColumnName("specialization");
+
+        builder.Property(expert => expert.Rating)
+            .HasColumnName("rating");
+
+        builder.Property(expert => expert.IsVerified)
+            .HasColumnName("is_verified");
 
         builder.HasOne(expert => expert.User)
             .WithOne()

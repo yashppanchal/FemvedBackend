@@ -8,6 +8,7 @@ namespace FemvedBackend.Application.Interfaces.Repositories;
 public interface IProductRepository
 {
     Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Product?> GetByIdForOwnerAsync(Guid id, Guid ownerId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Product>> ListAsync(CancellationToken cancellationToken = default);
     Task AddAsync(Product product, CancellationToken cancellationToken = default);
     Task UpdateAsync(Product product, CancellationToken cancellationToken = default);

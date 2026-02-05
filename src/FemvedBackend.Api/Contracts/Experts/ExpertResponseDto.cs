@@ -4,7 +4,8 @@ namespace FemvedBackend.Api.Contracts.Experts;
 /// Represents an expert response payload.
 /// </summary>
 public sealed record ExpertResponseDto(
-    Guid Id,
     Guid UserId,
-    string DisplayName,
-    string? Bio);
+    string? Bio,
+    string? Specialization,
+    decimal Rating,
+    bool IsVerified);

@@ -20,14 +20,15 @@ public sealed class CreateExpertHandler
     {
         var expert = new Expert
         {
-            Id = Guid.NewGuid(),
             UserId = request.UserId,
-            DisplayName = request.DisplayName.Trim(),
-            Bio = request.Bio?.Trim() ?? string.Empty
+            Bio = request.Bio?.Trim() ?? string.Empty,
+            Specialization = request.Specialization?.Trim() ?? string.Empty,
+            Rating = 0m,
+            IsVerified = false
         };
 
         await _expertRepository.AddAsync(expert, cancellationToken);
 
-        return new CreateExpertResult(expert.Id, expert.UserId, expert.DisplayName, expert.Bio);
+        return new CreateExpertResult(expert.UserId, expert.Bio, expert.Specialization, expert.Rating, expert.IsVerified);
     }
 }

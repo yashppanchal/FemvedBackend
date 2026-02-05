@@ -1,0 +1,141 @@
+{
+  "info": {
+    "name": "FemvedBackend API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Expert listing",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/experts",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "experts"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Response is an array', function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(Array.isArray(json)).to.eql(true);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Expert detail",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/experts/{{expertId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "experts", "{{expertId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Response has expertId', function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('expertId');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Product creation (expert)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productTypeId\": {{productTypeId}},\n  \"title\": \"Sample Program\",\n  \"description\": \"Sample description\",\n  \"imageUrl\": \"https://example.com/image.png\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "products"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 201', function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "pm.test('Response has productId', function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('productId');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Product creation (unauthorized)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productTypeId\": {{productTypeId}},\n  \"title\": \"Unauthorized Program\",\n  \"description\": \"Should fail\",\n  \"imageUrl\": \"https://example.com/image.png\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "products"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 401', function () {",
+              "  pm.response.to.have.status(401);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

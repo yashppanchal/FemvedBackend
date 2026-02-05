@@ -11,12 +11,29 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.ToTable("products");
         builder.HasKey(product => product.Id);
 
-        builder.Property(product => product.Name)
+        builder.Property(product => product.Title)
+            .HasColumnName("title")
             .HasMaxLength(200)
             .IsRequired();
 
         builder.Property(product => product.Description)
+            .HasColumnName("description")
             .HasMaxLength(2000);
+
+        builder.Property(product => product.ImageUrl)
+            .HasColumnName("image_url");
+
+        builder.Property(product => product.IsActive)
+            .HasColumnName("is_active");
+
+        builder.Property(product => product.CreatedBy)
+            .HasColumnName("created_by");
+
+        builder.Property(product => product.CreatedAt)
+            .HasColumnName("created_at");
+
+        builder.Property(product => product.ProductTypeId)
+            .HasColumnName("product_type_id");
 
         builder.HasIndex(product => product.ProductTypeId);
 

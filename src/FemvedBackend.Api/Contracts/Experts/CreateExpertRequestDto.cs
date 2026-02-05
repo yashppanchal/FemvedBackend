@@ -5,5 +5,5 @@ namespace FemvedBackend.Api.Contracts.Experts;
 /// </summary>
 public sealed record CreateExpertRequestDto(
     Guid UserId,
-    string DisplayName,
-    string? Bio);
+    string? Bio,
+    string? Specialization);

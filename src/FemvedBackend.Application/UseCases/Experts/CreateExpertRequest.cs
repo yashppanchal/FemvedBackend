@@ -5,5 +5,5 @@ namespace FemvedBackend.Application.UseCases.Experts;
 /// </summary>
 public sealed record CreateExpertRequest(
     Guid UserId,
-    string DisplayName,
-    string? Bio);
+    string? Bio,
+    string? Specialization);

@@ -3,6 +3,8 @@
 ## General Guidelines
 - Use clear and concise comments to describe the purpose of functions and classes.
 - Follow consistent naming conventions for variables, methods, and classes.
+- Do not invent tables/columns/JSON fields; use only provided schemas/contracts.
+- Do not modify authentication/users/roles/existing APIs; follow instructions strictly without asking questions.
 
 ## Code Style
 - Adhere to the .NET coding standards for formatting and structure.
@@ -23,3 +25,4 @@
 - Prefer separate application handlers per use case over a single AuthService.
 - Implement email sending via IEmailSender with a console/logging stub.
 - Add ICurrentUserService abstraction now.
+- Set the base route for the API to `/api/guided`.

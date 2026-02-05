@@ -12,8 +12,12 @@ public sealed class ProductTypeConfiguration : IEntityTypeConfiguration<ProductT
         builder.HasKey(productType => productType.Id);
 
         builder.Property(productType => productType.Name)
+            .HasColumnName("name")
             .HasMaxLength(150)
             .IsRequired();
+
+        builder.Property(productType => productType.Description)
+            .HasColumnName("description");
 
         builder.HasIndex(productType => productType.Name)
             .IsUnique();

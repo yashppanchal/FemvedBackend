@@ -148,3 +148,17 @@ TABLE: users
 - is_active (boolean)
 - created_at (timestamp)
 - updated_at (timestamp)
+
+
+TABLE: application_logs
+- id (bigint)
+- message (text)
+- message_template (text)
+- level (char)
+- timestamp (timestamp)
+- exception (text)
+- properties (jsonb)
+- source_context (text)
+- request_path (text)
+- user_id (uuid)
+- created_at (timestamp)
