@@ -1,0 +1,949 @@
+{
+  "info": {
+    "name": "FemvedBackend API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "expertToken", "value": "" },
+    { "key": "userToken", "value": "" },
+    { "key": "domainId", "value": "" },
+    { "key": "categoryId", "value": "" },
+    { "key": "subCategoryId", "value": "" },
+    { "key": "programId", "value": "" },
+    { "key": "pricingId", "value": "" },
+    { "key": "expertId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "AUTH",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Password123!\",\n  \"firstName\": \"Admin\",\n  \"lastName\": \"User\",\n  \"country\": \"US\",\n  \"currency\": \"USD\",\n  \"roleType\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Has userId', function () { pm.expect(json).to.have.property('userId'); });",
+                  "pm.test('Has tokens', function () { pm.expect(json).to.have.property('tokens'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Has access token', function () { pm.expect(json.tokens).to.have.property('accessToken'); });",
+                  "pm.collectionVariables.set('adminToken', json.tokens.accessToken);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"refresh\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Has tokens', function () { pm.expect(pm.response.json()).to.have.property('tokens'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"resetLinkBase\": \"https://example.com/reset\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "forgot-password"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Has emailSent', function () { pm.expect(pm.response.json()).to.have.property('emailSent'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"resetToken\": \"token\",\n  \"newPassword\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "reset-password"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Has userId', function () { pm.expect(pm.response.json()).to.have.property('userId'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "GUIDED – PUBLIC",
+      "item": [
+        {
+          "name": "Get Guided",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/guided",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "guided"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response is array', function () { pm.expect(Array.isArray(pm.response.json())).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Get Guided By Category",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/guided/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "guided", "categories", "{{categoryId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Get Guided By Subcategory",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/guided/subcategories/{{subCategoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "guided", "subcategories", "{{subCategoryId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Get Guided Programs (Flat)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/guided/programs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "guided", "programs"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response is array', function () { pm.expect(Array.isArray(pm.response.json())).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Get Guided Expert Programs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/guided/experts/{{expertId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "guided", "experts", "{{expertId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('Status is 200 or 404', function () { pm.expect([200,404]).to.include(pm.response.code); });"] }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "GUIDED – ADMIN",
+      "item": [
+        {
+          "name": "Create Domain",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mind\",\n  \"description\": \"Mind domain\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/domains",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "guided", "domains"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('domainId', json.id);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Update Domain",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mind Updated\",\n  \"description\": \"Updated\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/domains/{{domainId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "guided", "domains", "{{domainId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Delete Domain",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/domains/{{domainId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "guided", "domains", "{{domainId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('Status is 204', function () { pm.response.to.have.status(204); });"] }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domainId\": 1,\n  \"parentCategoryId\": null,\n  \"name\": \"Category\",\n  \"description\": \"Description\",\n  \"displayOrder\": 1,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "guided", "categories"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('categoryId', json.id);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domainId\": 1,\n  \"parentCategoryId\": null,\n  \"name\": \"Category Updated\",\n  \"description\": \"Updated\",\n  \"displayOrder\": 2,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "guided", "categories", "{{categoryId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "guided", "categories", "{{categoryId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('Status is 204', function () { pm.response.to.have.status(204); });"] }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Create Program",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"expertId\": \"{{expertId}}\",\n  \"title\": \"Program\",\n  \"description\": \"Description\",\n  \"imageUrl\": \"https://example.com/image.png\",\n  \"isActive\": true,\n  \"createdAt\": \"2024-01-01T00:00:00Z\",\n  \"pricing\": [\n    {\n      \"durationWeeks\": 4,\n      \"originalPrice\": 1000,\n      \"discountPercentage\": 10,\n      \"finalPrice\": 900,\n      \"currencyCode\": \"USD\",\n      \"isActive\": true\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/programs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "guided", "programs"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('programId', json.id);",
+                  "if (json.pricing && json.pricing.length > 0) { pm.collectionVariables.set('pricingId', json.pricing[0].id); }"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Update Program",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"expertId\": \"{{expertId}}\",\n  \"title\": \"Program Updated\",\n  \"description\": \"Updated\",\n  \"imageUrl\": \"https://example.com/image.png\",\n  \"isActive\": true,\n  \"createdAt\": \"2024-01-01T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/programs/{{programId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "guided", "programs", "{{programId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Has pricing', function () { pm.expect(json).to.have.property('pricing'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Delete Program",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/programs/{{programId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "guided", "programs", "{{programId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('Status is 204', function () { pm.response.to.have.status(204); });"] }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Create Pricing",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"durationWeeks\": 8,\n  \"originalPrice\": 2000,\n  \"discountPercentage\": 10,\n  \"finalPrice\": 1800,\n  \"currencyCode\": \"USD\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/programs/{{programId}}/pricing",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "guided", "programs", "{{programId}}", "pricing"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('pricingId', json.id);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Update Pricing",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"durationWeeks\": 8,\n  \"originalPrice\": 2000,\n  \"discountPercentage\": 5,\n  \"finalPrice\": 1900,\n  \"currencyCode\": \"USD\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/programs/{{programId}}/pricing/{{pricingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "guided", "programs", "{{programId}}", "pricing", "{{pricingId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Delete Pricing",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/programs/{{programId}}/pricing/{{pricingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "guided", "programs", "{{programId}}", "pricing", "{{pricingId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('Status is 204', function () { pm.response.to.have.status(204); });"] }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Create Expert",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"00000000-0000-0000-0000-000000000000\",\n  \"bio\": \"Bio\",\n  \"specialization\": \"Specialization\",\n  \"rating\": 4.5,\n  \"isVerified\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/experts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "guided", "experts"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('expertId', json.userId);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Update Expert",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{expertId}}\",\n  \"bio\": \"Bio Updated\",\n  \"specialization\": \"Specialization\",\n  \"rating\": 4.6,\n  \"isVerified\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/experts/{{expertId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "guided", "experts", "{{expertId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Delete Expert",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/experts/{{expertId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "guided", "experts", "{{expertId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('Status is 204', function () { pm.response.to.have.status(204); });"] }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "EXPERTS",
+      "item": [
+        {
+          "name": "Get Experts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/experts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "experts"]
+            }
+          },
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] } }
+          ],
+          "response": []
+        },
+        {
+          "name": "Get Expert By Id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/experts/{{expertId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "experts", "{{expertId}}"]
+            }
+          },
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('Status is 200 or 404', function () { pm.expect([200,404]).to.include(pm.response.code); });"] } }
+          ],
+          "response": []
+        },
+        {
+          "name": "Create Expert",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{expertId}}\",\n  \"bio\": \"Bio\",\n  \"specialization\": \"Specialization\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/experts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "experts"]
+            }
+          },
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('Status is 201', function () { pm.response.to.have.status(201); });"] } }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "PRODUCTS (EXPERT)",
+      "item": [
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{expertToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productTypeId\": 1,\n  \"title\": \"Product\",\n  \"description\": \"Description\",\n  \"imageUrl\": \"https://example.com/image.png\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"]
+            }
+          },
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('Status is 201', function () { pm.response.to.have.status(201); });"] } }
+          ],
+          "response": []
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{expertToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productTypeId\": 1,\n  \"title\": \"Product Updated\",\n  \"description\": \"Updated\",\n  \"imageUrl\": \"https://example.com/image.png\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/products/{{programId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products", "{{programId}}"]
+            }
+          },
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] } }
+          ],
+          "response": []
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{expertToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/products/{{programId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products", "{{programId}}"]
+            }
+          },
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('Status is 204', function () { pm.response.to.have.status(204); });"] } }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ORDERS",
+      "item": [
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"productVariantId\": \"00000000-0000-0000-0000-000000000000\",\n      \"quantity\": 1,\n      \"unitPrice\": 100\n    }\n  ],\n  \"couponId\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders"]
+            }
+          },
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] } }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "PAYMENTS",
+      "item": [
+        {
+          "name": "Initiate Payment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"00000000-0000-0000-0000-000000000000\",\n  \"paymentGatewayId\": 1,\n  \"paymentGatewayName\": \"Stripe\",\n  \"currency\": \"USD\",\n  \"reference\": \"ref\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/payments/initiate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments", "initiate"]
+            }
+          },
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] } }
+          ],
+          "response": []
+        },
+        {
+          "name": "Verify Payment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paymentId\": \"00000000-0000-0000-0000-000000000000\",\n  \"isSuccessful\": true,\n  \"providerReference\": \"ref\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/payments/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments", "verify"]
+            }
+          },
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] } }
+          ],
+          "response": []
+        },
+        {
+          "name": "Refund Payment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paymentId\": \"00000000-0000-0000-0000-000000000000\",\n  \"paymentGatewayName\": \"Stripe\",\n  \"amount\": 100,\n  \"reason\": \"Customer request\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/payments/refund",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments", "refund"]
+            }
+          },
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] } }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ACCESS",
+      "item": [
+        {
+          "name": "Grant Access",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"00000000-0000-0000-0000-000000000000\",\n  \"productId\": \"00000000-0000-0000-0000-000000000000\",\n  \"expiresAt\": \"2024-01-01T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/access/grant",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "access", "grant"]
+            }
+          },
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('Status is 204', function () { pm.response.to.have.status(204); });"] } }
+          ],
+          "response": []
+        },
+        {
+          "name": "Revoke Access",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"00000000-0000-0000-0000-000000000000\",\n  \"productId\": \"00000000-0000-0000-0000-000000000000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/access/revoke",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "access", "revoke"]
+            }
+          },
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('Status is 204', function () { pm.response.to.have.status(204); });"] } }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ME",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/me/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["me", "profile"]
+            }
+          },
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] } }
+          ],
+          "response": []
+        }
+      ]
+    }
+  ]
+}
