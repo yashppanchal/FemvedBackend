@@ -1,139 +1,2056 @@
 {
   "info": {
-    "name": "FemvedBackend API",
+    "name": "Femved API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://localhost:5001"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    }
+  ],
   "item": [
     {
-      "name": "Expert listing",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/experts",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "experts"]
-        }
-      },
-      "event": [
+      "name": "Authentication",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 200', function () {",
-              "  pm.response.to.have.status(200);",
-              "});",
-              "pm.test('Response is an array', function () {",
-              "  const json = pm.response.json();",
-              "  pm.expect(Array.isArray(json)).to.eql(true);",
-              "});"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Expert detail",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/experts/{{expertId}}",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "experts", "{{expertId}}"]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 200', function () {",
-              "  pm.response.to.have.status(200);",
-              "});",
-              "pm.test('Response has expertId', function () {",
-              "  const json = pm.response.json();",
-              "  pm.expect(json).to.have.property('expertId');",
-              "});"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Product creation (expert)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}",
-            "type": "text"
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"jane.doe@example.com\",\"password\":\"P@ssw0rd!\",\"firstName\":\"Jane\",\"lastName\":\"Doe\",\"country\":\"US\",\"currency\":\"USD\",\"roleType\":0}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
           },
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"productTypeId\": {{productTypeId}},\n  \"title\": \"Sample Program\",\n  \"description\": \"Sample description\",\n  \"imageUrl\": \"https://example.com/image.png\"\n}"
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"userId\":\"11111111-1111-1111-1111-111111111111\",\"email\":\"jane.doe@example.com\",\"tokens\":{\"accessToken\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\",\"accessTokenExpiresAt\":\"2025-01-01T01:00:00+00:00\",\"refreshToken\":\"d6f0d3b1-8c34-4b5b-b0a2-12f1d2c3b4a5\",\"refreshTokenExpiresAt\":\"2025-01-15T01:00:00+00:00\"}}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"email\":[\"Email is required.\"]}}"
+            }
+          ]
         },
-        "url": {
-          "raw": "{{baseUrl}}/api/products",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "products"]
-        }
-      },
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 201', function () {",
-              "  pm.response.to.have.status(201);",
-              "});",
-              "pm.test('Response has productId', function () {",
-              "  const json = pm.response.json();",
-              "  pm.expect(json).to.have.property('productId');",
-              "});"
-            ]
-          }
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"jane.doe@example.com\",\"password\":\"P@ssw0rd!\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.environment.set(\"accessToken\", json.accessToken);",
+                  "pm.environment.set(\"refreshToken\", json.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"userId\":\"11111111-1111-1111-1111-111111111111\",\"email\":\"jane.doe@example.com\",\"tokens\":{\"accessToken\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\",\"accessTokenExpiresAt\":\"2025-01-01T01:00:00+00:00\",\"refreshToken\":\"d6f0d3b1-8c34-4b5b-b0a2-12f1d2c3b4a5\",\"refreshTokenExpiresAt\":\"2025-01-15T01:00:00+00:00\"}}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"email\":[\"Email is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\":\"{{refreshToken}}\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"tokens\":{\"accessToken\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\",\"accessTokenExpiresAt\":\"2025-01-01T01:00:00+00:00\",\"refreshToken\":\"d6f0d3b1-8c34-4b5b-b0a2-12f1d2c3b4a5\",\"refreshTokenExpiresAt\":\"2025-01-15T01:00:00+00:00\"}}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"refreshToken\":[\"Refresh token is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"jane.doe@example.com\",\"resetLinkBase\":\"https://example.com/reset\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/forgot-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"emailSent\":true}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"email\":[\"Email is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"jane.doe@example.com\",\"resetToken\":\"reset-token\",\"newPassword\":\"N3wP@ssw0rd!\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/reset-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"userId\":\"11111111-1111-1111-1111-111111111111\",\"email\":\"jane.doe@example.com\"}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"resetToken\":[\"Reset token is invalid.\"]}}"
+            }
+          ]
         }
       ]
     },
     {
-      "name": "Product creation (unauthorized)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"productTypeId\": {{productTypeId}},\n  \"title\": \"Unauthorized Program\",\n  \"description\": \"Should fail\",\n  \"imageUrl\": \"https://example.com/image.png\"\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/api/products",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "products"]
-        }
-      },
-      "event": [
+      "name": "Admin",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 401', function () {",
-              "  pm.response.to.have.status(401);",
-              "});"
-            ]
-          }
+          "name": "Create Domain",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Wellness\",\"description\":\"Guided wellness programs\",\"isActive\":true}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/domains",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "guided",
+                "domains"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"id\":1,\"name\":\"Wellness\",\"description\":\"Guided wellness programs\",\"isActive\":true}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"name\":[\"Name is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Update Domain",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Wellness\",\"description\":\"Updated domain\",\"isActive\":true}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/domains/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "guided",
+                "domains",
+                "1"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"id\":1,\"name\":\"Wellness\",\"description\":\"Updated domain\",\"isActive\":true}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"domainId\":[\"DomainId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Domain",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/domains/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "guided",
+                "domains",
+                "1"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"domainId\":[\"DomainId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"domainId\":1,\"parentCategoryId\":null,\"name\":\"Nutrition\",\"description\":\"Nutrition category\",\"displayOrder\":1,\"isActive\":true}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "guided",
+                "categories"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"id\":\"33333333-3333-3333-3333-333333333333\",\"domainId\":1,\"parentCategoryId\":null,\"name\":\"Nutrition\",\"description\":\"Nutrition category\",\"displayOrder\":1,\"isActive\":true}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"name\":[\"Name is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"domainId\":1,\"parentCategoryId\":null,\"name\":\"Nutrition\",\"description\":\"Updated category\",\"displayOrder\":1,\"isActive\":true}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/categories/33333333-3333-3333-3333-333333333333",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "guided",
+                "categories",
+                "33333333-3333-3333-3333-333333333333"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"id\":\"33333333-3333-3333-3333-333333333333\",\"domainId\":1,\"parentCategoryId\":null,\"name\":\"Nutrition\",\"description\":\"Updated category\",\"displayOrder\":1,\"isActive\":true}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"categoryId\":[\"CategoryId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/categories/33333333-3333-3333-3333-333333333333",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "guided",
+                "categories",
+                "33333333-3333-3333-3333-333333333333"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"categoryId\":[\"CategoryId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Create Program",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"categoryId\":\"33333333-3333-3333-3333-333333333333\",\"expertId\":\"22222222-2222-2222-2222-222222222222\",\"title\":\"Mindfulness 101\",\"description\":\"Intro program\",\"imageUrl\":\"https://example.com/mindfulness.png\",\"isActive\":true,\"createdAt\":\"2025-01-01T00:00:00Z\",\"pricing\":[{\"durationWeeks\":4,\"originalPrice\":199.0,\"discountPercentage\":10.0,\"finalPrice\":179.1,\"currencyCode\":\"USD\",\"isActive\":true}]}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/programs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "guided",
+                "programs"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"id\":\"44444444-4444-4444-4444-444444444444\",\"categoryId\":\"33333333-3333-3333-3333-333333333333\",\"expertId\":\"22222222-2222-2222-2222-222222222222\",\"title\":\"Mindfulness 101\",\"description\":\"Intro program\",\"imageUrl\":\"https://example.com/mindfulness.png\",\"isActive\":true,\"createdAt\":\"2025-01-01T00:00:00Z\",\"pricing\":[{\"id\":\"55555555-5555-5555-5555-555555555555\",\"programId\":\"44444444-4444-4444-4444-444444444444\",\"durationWeeks\":4,\"originalPrice\":199.0,\"discountPercentage\":10.0,\"finalPrice\":179.1,\"currencyCode\":\"USD\",\"isActive\":true}]}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"title\":[\"Title is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Update Program",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"categoryId\":\"33333333-3333-3333-3333-333333333333\",\"expertId\":\"22222222-2222-2222-2222-222222222222\",\"title\":\"Mindfulness 101\",\"description\":\"Updated program\",\"imageUrl\":\"https://example.com/mindfulness.png\",\"isActive\":true,\"createdAt\":\"2025-01-01T00:00:00Z\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/programs/44444444-4444-4444-4444-444444444444",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "guided",
+                "programs",
+                "44444444-4444-4444-4444-444444444444"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"id\":\"44444444-4444-4444-4444-444444444444\",\"categoryId\":\"33333333-3333-3333-3333-333333333333\",\"expertId\":\"22222222-2222-2222-2222-222222222222\",\"title\":\"Mindfulness 101\",\"description\":\"Updated program\",\"imageUrl\":\"https://example.com/mindfulness.png\",\"isActive\":true,\"createdAt\":\"2025-01-01T00:00:00Z\",\"pricing\":[{\"id\":\"55555555-5555-5555-5555-555555555555\",\"programId\":\"44444444-4444-4444-4444-444444444444\",\"durationWeeks\":4,\"originalPrice\":199.0,\"discountPercentage\":10.0,\"finalPrice\":179.1,\"currencyCode\":\"USD\",\"isActive\":true}]}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"programId\":[\"ProgramId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Program",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/programs/44444444-4444-4444-4444-444444444444",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "guided",
+                "programs",
+                "44444444-4444-4444-4444-444444444444"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"programId\":[\"ProgramId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Create Program Pricing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"durationWeeks\":8,\"originalPrice\":299.0,\"discountPercentage\":15.0,\"finalPrice\":254.15,\"currencyCode\":\"USD\",\"isActive\":true}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/programs/44444444-4444-4444-4444-444444444444/pricing",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "guided",
+                "programs",
+                "44444444-4444-4444-4444-444444444444",
+                "pricing"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"id\":\"55555555-5555-5555-5555-555555555555\",\"programId\":\"44444444-4444-4444-4444-444444444444\",\"durationWeeks\":8,\"originalPrice\":299.0,\"discountPercentage\":15.0,\"finalPrice\":254.15,\"currencyCode\":\"USD\",\"isActive\":true}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"durationWeeks\":[\"DurationWeeks is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Update Program Pricing",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"durationWeeks\":8,\"originalPrice\":299.0,\"discountPercentage\":15.0,\"finalPrice\":254.15,\"currencyCode\":\"USD\",\"isActive\":true}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/programs/44444444-4444-4444-4444-444444444444/pricing/55555555-5555-5555-5555-555555555555",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "guided",
+                "programs",
+                "44444444-4444-4444-4444-444444444444",
+                "pricing",
+                "55555555-5555-5555-5555-555555555555"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"id\":\"55555555-5555-5555-5555-555555555555\",\"programId\":\"44444444-4444-4444-4444-444444444444\",\"durationWeeks\":8,\"originalPrice\":299.0,\"discountPercentage\":15.0,\"finalPrice\":254.15,\"currencyCode\":\"USD\",\"isActive\":true}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"pricingId\":[\"PricingId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Program Pricing",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/programs/44444444-4444-4444-4444-444444444444/pricing/55555555-5555-5555-5555-555555555555",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "guided",
+                "programs",
+                "44444444-4444-4444-4444-444444444444",
+                "pricing",
+                "55555555-5555-5555-5555-555555555555"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"pricingId\":[\"PricingId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Create Expert (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\":\"22222222-2222-2222-2222-222222222222\",\"bio\":\"Certified coach\",\"specialization\":\"Mindfulness\",\"rating\":4.8,\"isVerified\":true}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/experts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "guided",
+                "experts"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"userId\":\"22222222-2222-2222-2222-222222222222\",\"bio\":\"Certified coach\",\"specialization\":\"Mindfulness\",\"rating\":4.8,\"isVerified\":true}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"userId\":[\"UserId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Update Expert (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\":\"22222222-2222-2222-2222-222222222222\",\"bio\":\"Certified coach\",\"specialization\":\"Mindfulness\",\"rating\":4.8,\"isVerified\":true}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/experts/22222222-2222-2222-2222-222222222222",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "guided",
+                "experts",
+                "22222222-2222-2222-2222-222222222222"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"userId\":\"22222222-2222-2222-2222-222222222222\",\"bio\":\"Certified coach\",\"specialization\":\"Mindfulness\",\"rating\":4.8,\"isVerified\":true}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"expertId\":[\"ExpertId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Expert (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/guided/experts/22222222-2222-2222-2222-222222222222",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "guided",
+                "experts",
+                "22222222-2222-2222-2222-222222222222"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"expertId\":[\"ExpertId is required.\"]}}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expert",
+      "item": [
+        {
+          "name": "Get Experts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/experts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "experts"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[{\"expertId\":\"22222222-2222-2222-2222-222222222222\",\"expertName\":\"Alex Trainer\",\"bio\":\"Certified coach\",\"programs\":[{\"programId\":\"44444444-4444-4444-4444-444444444444\",\"title\":\"Mindfulness 101\",\"description\":\"Intro program\",\"image\":\"https://example.com/mindfulness.png\",\"durations\":[{\"weeks\":4,\"price\":199.0,\"discount\":10.0,\"finalPrice\":179.1}]}]}]"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"expertId\":[\"ExpertId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Get Expert By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/experts/22222222-2222-2222-2222-222222222222",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "experts",
+                "22222222-2222-2222-2222-222222222222"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"expertId\":\"22222222-2222-2222-2222-222222222222\",\"expertName\":\"Alex Trainer\",\"bio\":\"Certified coach\",\"programs\":[{\"programId\":\"44444444-4444-4444-4444-444444444444\",\"title\":\"Mindfulness 101\",\"description\":\"Intro program\",\"image\":\"https://example.com/mindfulness.png\",\"durations\":[{\"weeks\":4,\"price\":199.0,\"discount\":10.0,\"finalPrice\":179.1}]}]}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"id\":[\"Id is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Create Expert",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\":\"22222222-2222-2222-2222-222222222222\",\"bio\":\"Certified coach\",\"specialization\":\"Mindfulness\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/experts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "experts"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"userId\":\"22222222-2222-2222-2222-222222222222\",\"bio\":\"Certified coach\",\"specialization\":\"Mindfulness\",\"rating\":4.8,\"isVerified\":false}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"userId\":[\"UserId is required.\"]}}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "profile"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"userId\":\"11111111-1111-1111-1111-111111111111\",\"email\":\"jane.doe@example.com\",\"firstName\":\"Jane\",\"lastName\":\"Doe\",\"country\":\"US\",\"currency\":\"USD\",\"role\":\"User\"}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"token\":[\"Access token is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"items\":[{\"productVariantId\":\"77777777-7777-7777-7777-777777777777\",\"quantity\":1,\"unitPrice\":49.99}],\"couponId\":null}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"orderId\":\"88888888-8888-8888-8888-888888888888\",\"status\":\"Pending\",\"totalAmount\":49.99}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"items\":[\"At least one item is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Initiate Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"orderId\":\"88888888-8888-8888-8888-888888888888\",\"paymentGatewayId\":1,\"paymentGatewayName\":\"Stripe\",\"currency\":\"USD\",\"reference\":\"order-8888\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/payments/initiate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "initiate"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"paymentId\":\"99999999-9999-9999-9999-999999999999\",\"status\":\"Pending\",\"providerReference\":\"pi_123456\"}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"orderId\":[\"OrderId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Verify Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"paymentId\":\"99999999-9999-9999-9999-999999999999\",\"isSuccessful\":true,\"providerReference\":\"pi_123456\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/payments/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "verify"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"paymentId\":\"99999999-9999-9999-9999-999999999999\",\"status\":\"Completed\",\"providerReference\":\"pi_123456\"}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"paymentId\":[\"PaymentId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Refund Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"paymentId\":\"99999999-9999-9999-9999-999999999999\",\"paymentGatewayName\":\"Stripe\",\"amount\":49.99,\"reason\":\"Duplicate charge\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/payments/refund",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "refund"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"paymentId\":\"99999999-9999-9999-9999-999999999999\",\"status\":\"Refunded\",\"refundStatus\":\"Completed\",\"providerReference\":\"re_123456\"}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"amount\":[\"Amount must be greater than zero.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Grant User Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\":\"11111111-1111-1111-1111-111111111111\",\"productId\":\"66666666-6666-6666-6666-666666666666\",\"expiresAt\":\"2025-02-01T00:00:00+00:00\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/access/grant",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "access",
+                "grant"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"userId\":[\"UserId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Revoke User Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\":\"11111111-1111-1111-1111-111111111111\",\"productId\":\"66666666-6666-6666-6666-666666666666\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/access/revoke",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "access",
+                "revoke"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"productId\":[\"ProductId is required.\"]}}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"productTypeId\":1,\"title\":\"Meditation Course\",\"description\":\"Intro course\",\"imageUrl\":\"https://example.com/product.png\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "products"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"productId\":\"66666666-6666-6666-6666-666666666666\",\"productTypeId\":1,\"title\":\"Meditation Course\",\"description\":\"Intro course\",\"imageUrl\":\"https://example.com/product.png\",\"isActive\":true}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"title\":[\"Title is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"productTypeId\":1,\"title\":\"Meditation Course\",\"description\":\"Updated description\",\"imageUrl\":\"https://example.com/product.png\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/products/66666666-6666-6666-6666-666666666666",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "66666666-6666-6666-6666-666666666666"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"productId\":\"66666666-6666-6666-6666-666666666666\",\"productTypeId\":1,\"title\":\"Meditation Course\",\"description\":\"Updated description\",\"imageUrl\":\"https://example.com/product.png\",\"isActive\":true}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"productId\":[\"ProductId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/products/66666666-6666-6666-6666-666666666666",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "66666666-6666-6666-6666-666666666666"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"productId\":[\"ProductId is required.\"]}}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Programs",
+      "item": [
+        {
+          "name": "Get Guided Programs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/guided/programs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "guided",
+                "programs"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[{\"programId\":\"44444444-4444-4444-4444-444444444444\",\"categoryId\":\"33333333-3333-3333-3333-333333333333\",\"expertId\":\"22222222-2222-2222-2222-222222222222\",\"expertBio\":\"Certified coach\",\"expertSpecialization\":\"Mindfulness\",\"expertRating\":4.8,\"expertIsVerified\":true,\"title\":\"Mindfulness 101\",\"description\":\"Intro program\",\"imageUrl\":\"https://example.com/mindfulness.png\",\"isActive\":true,\"createdAt\":\"2025-01-01T00:00:00Z\",\"durations\":[{\"pricingId\":\"55555555-5555-5555-5555-555555555555\",\"programId\":\"44444444-4444-4444-4444-444444444444\",\"durationWeeks\":4,\"originalPrice\":199.0,\"discountPercentage\":10.0,\"finalPrice\":179.1,\"currencyCode\":\"USD\",\"isActive\":true}]}]"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"programs\":[\"Invalid request.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Get Guided Expert Programs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/guided/experts/22222222-2222-2222-2222-222222222222",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "guided",
+                "experts",
+                "22222222-2222-2222-2222-222222222222"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"expertId\":\"22222222-2222-2222-2222-222222222222\",\"bio\":\"Certified coach\",\"specialization\":\"Mindfulness\",\"rating\":4.8,\"isVerified\":true,\"programs\":[{\"programId\":\"44444444-4444-4444-4444-444444444444\",\"categoryId\":\"33333333-3333-3333-3333-333333333333\",\"expertId\":\"22222222-2222-2222-2222-222222222222\",\"title\":\"Mindfulness 101\",\"description\":\"Intro program\",\"imageUrl\":\"https://example.com/mindfulness.png\",\"isActive\":true,\"createdAt\":\"2025-01-01T00:00:00Z\",\"durations\":[{\"pricingId\":\"55555555-5555-5555-5555-555555555555\",\"programId\":\"44444444-4444-4444-4444-444444444444\",\"durationWeeks\":4,\"originalPrice\":199.0,\"discountPercentage\":10.0,\"finalPrice\":179.1,\"currencyCode\":\"USD\",\"isActive\":true}]}]}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"expertId\":[\"ExpertId is required.\"]}}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Catalog Management",
+      "item": [
+        {
+          "name": "Get Guided Domain Tree",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/guided",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "guided"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[{\"domainId\":1,\"name\":\"Wellness\",\"description\":\"Guided wellness programs\",\"isActive\":true,\"categories\":[{\"categoryId\":\"33333333-3333-3333-3333-333333333333\",\"domainId\":1,\"parentCategoryId\":null,\"name\":\"Nutrition\",\"description\":\"Nutrition category\",\"displayOrder\":1,\"isActive\":true,\"subCategories\":[],\"programs\":[{\"programId\":\"44444444-4444-4444-4444-444444444444\",\"categoryId\":\"33333333-3333-3333-3333-333333333333\",\"expertId\":\"22222222-2222-2222-2222-222222222222\",\"title\":\"Mindfulness 101\",\"description\":\"Intro program\",\"imageUrl\":\"https://example.com/mindfulness.png\",\"isActive\":true,\"createdAt\":\"2025-01-01T00:00:00Z\",\"durations\":[{\"durationId\":\"55555555-5555-5555-5555-555555555555\",\"programId\":\"44444444-4444-4444-4444-444444444444\",\"durationWeeks\":4,\"originalPrice\":199.0,\"discountPercentage\":10.0,\"finalPrice\":179.1,\"currencyCode\":\"USD\",\"isActive\":true}]}]}]}]"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"domainId\":[\"DomainId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Get Guided By Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/guided/categories/33333333-3333-3333-3333-333333333333",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "guided",
+                "categories",
+                "33333333-3333-3333-3333-333333333333"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[{\"domainId\":1,\"name\":\"Wellness\",\"description\":\"Guided wellness programs\",\"isActive\":true,\"categories\":[{\"categoryId\":\"33333333-3333-3333-3333-333333333333\",\"domainId\":1,\"parentCategoryId\":null,\"name\":\"Nutrition\",\"description\":\"Nutrition category\",\"displayOrder\":1,\"isActive\":true,\"subCategories\":[],\"programs\":[]}]}]"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"categoryId\":[\"CategoryId is required.\"]}}"
+            }
+          ]
+        },
+        {
+          "name": "Get Guided By Subcategory",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/guided/subcategories/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "guided",
+                "subcategories",
+                "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[{\"domainId\":1,\"name\":\"Wellness\",\"description\":\"Guided wellness programs\",\"isActive\":true,\"categories\":[{\"categoryId\":\"33333333-3333-3333-3333-333333333333\",\"domainId\":1,\"parentCategoryId\":null,\"name\":\"Nutrition\",\"description\":\"Nutrition category\",\"displayOrder\":1,\"isActive\":true,\"subCategories\":[],\"programs\":[]}]}]"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\"status\":400,\"message\":\"Validation failed\",\"errors\":{\"subCategoryId\":[\"SubCategoryId is required.\"]}}"
+            }
+          ]
         }
       ]
     }

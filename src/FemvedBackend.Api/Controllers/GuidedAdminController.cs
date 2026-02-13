@@ -83,7 +83,7 @@ public sealed class GuidedAdminController : ControllerBase
     /// <summary>
     /// Updates a guided domain.
     /// </summary>
-    [HttpPut("domains/{domainId:short}")]
+    [HttpPut("domains/{domainId:int}")]
     [ProducesResponseType(typeof(AdminDomainResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<AdminDomainResponseDto>> UpdateDomain(
@@ -101,7 +101,7 @@ public sealed class GuidedAdminController : ControllerBase
     /// <summary>
     /// Deletes a guided domain and its related data.
     /// </summary>
-    [HttpDelete("domains/{domainId:short}")]
+    [HttpDelete("domains/{domainId:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> DeleteDomain(short domainId, CancellationToken cancellationToken)

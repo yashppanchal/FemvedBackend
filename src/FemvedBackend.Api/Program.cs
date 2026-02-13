@@ -1,3 +1,4 @@
+using FemvedBackend.Api.Swagger;
 using FemvedBackend.Api.Validation.Authentication;
 using FemvedBackend.Application.Identity;
 using FemvedBackend.Application.Interfaces.Identity;
@@ -21,7 +22,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Security.Claims;
+using System.Reflection;
 using System.Text;
 using NpgsqlTypes;
 using AppValidationException = FemvedBackend.Application.Exceptions.ValidationException;
@@ -65,6 +68,55 @@ builder.Logging.AddSerilog(Log.Logger, dispose: true);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Femved API",
+        Version = "v1",
+        Description = "Femved API endpoints"
+    });
+
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath);
+
+    options.TagActionsBy(api => new[]
+    {
+        api.ActionDescriptor.RouteValues.TryGetValue("controller", out var controller) && !string.IsNullOrWhiteSpace(controller)
+            ? controller
+            : api.GroupName ?? "default"
+    });
+    options.DocInclusionPredicate((_, _) => true);
+    options.OperationFilter<GlobalResponsesOperationFilter>();
+    options.SchemaFilter<ProblemDetailsSchemaFilter>();
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\""
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -238,6 +290,16 @@ app.UseExceptionHandler(appError =>
         });
     });
 });
+
+//if (app.Environment.IsDevelopment())
+//{
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.RoutePrefix = string.Empty;
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Femved API v1");
+});
+//}
 
 app.UseHttpsRedirection();
 
