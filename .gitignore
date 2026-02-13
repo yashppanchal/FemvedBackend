@@ -30,3 +30,4 @@ appsettings.*.local.json
 # NuGet
 *.nupkg
 packages/
+/postman/OLD
