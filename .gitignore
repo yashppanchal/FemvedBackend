@@ -31,3 +31,6 @@ appsettings.*.local.json
 *.nupkg
 packages/
 /postman/OLD
+/src/FemvedBackend.Api/appsettings.json
+/.env.local
+/src/FemvedBackend.Api/.env.local
