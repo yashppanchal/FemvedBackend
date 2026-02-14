@@ -15,6 +15,7 @@ using FemvedBackend.Infrastructure.Identity;
 using FemvedBackend.Infrastructure.Media;
 using FemvedBackend.Infrastructure.Notifications;
 using FemvedBackend.Infrastructure.Payments;
+using FemvedBackend.Infrastructure.Persistence;
 using FemvedBackend.Infrastructure.Persistence.Repositories;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -117,6 +118,8 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -190,32 +193,12 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 });
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
-builder.Services.PostConfigure<JwtOptions>(options =>
-{
-    if (options.AccessTokenMinutes <= 0)
-    {
-        options.AccessTokenMinutes = 15;
-    }
-
-    if (options.RefreshTokenDays <= 0)
-    {
-        options.RefreshTokenDays = 7;
-    }
-});
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
-        if (jwtOptions.AccessTokenMinutes <= 0)
-        {
-            jwtOptions.AccessTokenMinutes = 15;
-        }
-
-        if (jwtOptions.RefreshTokenDays <= 0)
-        {
-            jwtOptions.RefreshTokenDays = 7;
-        }
+        var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>()
+            ?? throw new InvalidOperationException("Jwt settings are not configured.");
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
