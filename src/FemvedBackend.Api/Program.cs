@@ -34,8 +34,8 @@ using Serilog.Context;
 using Serilog.Sinks.PostgreSQL;
 using DotNetEnv;
 
-
 var envFilePath = ".env.local";
+
 if (File.Exists(envFilePath))
 {
     Env.Load(envFilePath);
@@ -45,28 +45,33 @@ var builder = WebApplication.CreateBuilder(args);
 
 var defaultConn = builder.Configuration.GetConnectionString("DefaultConnection");
 var serilogConn = builder.Configuration.GetConnectionString("SerilogConnection");
+string? rawConnection = defaultConn;
 
-Console.WriteLine("DEBUG DefaultConnection: " + defaultConn);
-Console.WriteLine("DEBUG SerilogConnection: " + serilogConn);
-
-var serilogConnectionString =
-    serilogConn ?? defaultConn;
-
-if (string.IsNullOrWhiteSpace(serilogConnectionString))
+if (!string.IsNullOrEmpty(rawConnection) && rawConnection.StartsWith("postgresql://"))
 {
-    Console.WriteLine("DEBUG: Listing all configuration values:");
-    foreach (var kv in builder.Configuration.AsEnumerable())
-    {
-        Console.WriteLine($"{kv.Key} = {kv.Value}");
-    }
+    var uri = new Uri(rawConnection);
+    var userInfo = uri.UserInfo.Split(':');
 
-    throw new InvalidOperationException("Serilog connection string is not configured.");
+    var npgsqlBuilder = new Npgsql.NpgsqlConnectionStringBuilder
+    {
+        Host = uri.Host,
+        Port = uri.Port,
+        Database = uri.AbsolutePath.TrimStart('/'),
+        Username = userInfo[0],
+        Password = userInfo[1],
+        SslMode = Npgsql.SslMode.Require,
+        TrustServerCertificate = true
+    };
+
+    rawConnection = npgsqlBuilder.ConnectionString;
 }
 
 
-//var serilogConnectionString = builder.Configuration.GetConnectionString("SerilogConnection")
-//    ?? builder.Configuration.GetConnectionString("DefaultConnection")
-//    ?? throw new InvalidOperationException("Serilog connection string is not configured.");
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(rawConnection));
+
+
+var serilogConnectionString = rawConnection;
 
 var columnWriters = new Dictionary<string, ColumnWriterBase>
 {
@@ -147,8 +152,8 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
