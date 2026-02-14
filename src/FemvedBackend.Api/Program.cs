@@ -43,11 +43,30 @@ if (File.Exists(envFilePath))
 
 var builder = WebApplication.CreateBuilder(args);
 
-Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"));
+var defaultConn = builder.Configuration.GetConnectionString("DefaultConnection");
+var serilogConn = builder.Configuration.GetConnectionString("SerilogConnection");
 
-var serilogConnectionString = builder.Configuration.GetConnectionString("SerilogConnection")
-    ?? builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Serilog connection string is not configured.");
+Console.WriteLine("DEBUG DefaultConnection: " + defaultConn);
+Console.WriteLine("DEBUG SerilogConnection: " + serilogConn);
+
+var serilogConnectionString =
+    serilogConn ?? defaultConn;
+
+if (string.IsNullOrWhiteSpace(serilogConnectionString))
+{
+    Console.WriteLine("DEBUG: Listing all configuration values:");
+    foreach (var kv in builder.Configuration.AsEnumerable())
+    {
+        Console.WriteLine($"{kv.Key} = {kv.Value}");
+    }
+
+    throw new InvalidOperationException("Serilog connection string is not configured.");
+}
+
+
+//var serilogConnectionString = builder.Configuration.GetConnectionString("SerilogConnection")
+//    ?? builder.Configuration.GetConnectionString("DefaultConnection")
+//    ?? throw new InvalidOperationException("Serilog connection string is not configured.");
 
 var columnWriters = new Dictionary<string, ColumnWriterBase>
 {
