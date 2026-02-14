@@ -34,14 +34,12 @@ using Serilog.Context;
 using Serilog.Sinks.PostgreSQL;
 using DotNetEnv;
 
-//Env.Load(".env.local");
-var envFilePath = ".env.local";
-if (!File.Exists(envFilePath))
-{
-    throw new FileNotFoundException($"Environment file not found: {envFilePath}");
-}
-Env.Load(envFilePath);
 
+var envFilePath = ".env.local";
+if (File.Exists(envFilePath))
+{
+    Env.Load(envFilePath);
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
