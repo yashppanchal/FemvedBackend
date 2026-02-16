@@ -35,8 +35,10 @@ public sealed class GetProfileHandler
             user.Email,
             user.FirstName,
             user.LastName,
-            user.Country,
-            user.Currency,
+            user.CountryCode,
+            user.MobileNumber,
+            user.IsMobileVerified,
+            user.IsEmailVerified,
             roleName);
     }
 }

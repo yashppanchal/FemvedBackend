@@ -29,14 +29,14 @@ public sealed class JwtTokenService : ITokenService
         Guid userId,
         string email,
         IReadOnlyCollection<string> roles,
-        string country,
-        string currency,
+        string countryCode,
+        string mobileNumber,
         CancellationToken cancellationToken = default)
     {
         var accessTokenExpiresAt = DateTimeOffset.UtcNow.AddMinutes(_jwtOptions.AccessTokenMinutes);
         var refreshTokenExpiresAt = DateTimeOffset.UtcNow.AddDays(_jwtOptions.RefreshTokenDays);
 
-        var accessToken = GenerateAccessToken(userId, email, roles, country, currency, accessTokenExpiresAt);
+        var accessToken = GenerateAccessToken(userId, email, roles, countryCode, mobileNumber, accessTokenExpiresAt);
         var (refreshToken, refreshTokenHash) = GenerateRefreshToken();
 
         var refreshTokenEntity = new RefreshToken
@@ -67,7 +67,7 @@ public sealed class JwtTokenService : ITokenService
         var roleName = user.Role?.Name ?? string.Empty;
         var accessTokenExpiresAt = DateTimeOffset.UtcNow.AddMinutes(_jwtOptions.AccessTokenMinutes);
         var refreshTokenExpiresAt = DateTimeOffset.UtcNow.AddDays(_jwtOptions.RefreshTokenDays);
-        var accessToken = GenerateAccessToken(user.Id, user.Email, new[] { roleName }, user.Country, user.Currency, accessTokenExpiresAt);
+        var accessToken = GenerateAccessToken(user.Id, user.Email, new[] { roleName }, user.CountryCode, user.MobileNumber, accessTokenExpiresAt);
         var (newRefreshToken, newRefreshTokenHash) = GenerateRefreshToken();
 
         existingToken.RevokedAt = DateTimeOffset.UtcNow;
@@ -107,8 +107,8 @@ public sealed class JwtTokenService : ITokenService
         Guid userId,
         string email,
         IReadOnlyCollection<string> roles,
-        string country,
-        string currency,
+        string countryCode,
+        string mobileNumber,
         DateTimeOffset expiresAt)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SigningKey));
@@ -121,8 +121,8 @@ public sealed class JwtTokenService : ITokenService
             new(ClaimTypes.NameIdentifier, userId.ToString()),
             new(ClaimTypes.Email, email),
             new("userId", userId.ToString()),
-            new("country", country),
-            new("currency", currency)
+            new("countryCode", countryCode),
+            new("mobileNumber", mobileNumber)
         };
 
         foreach (var role in roles.Where(role => !string.IsNullOrWhiteSpace(role)))

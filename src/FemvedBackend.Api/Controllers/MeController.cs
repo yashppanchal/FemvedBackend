@@ -35,8 +35,10 @@ public sealed class MeController : ControllerBase
             result.Email,
             result.FirstName,
             result.LastName,
-            result.Country,
-            result.Currency,
+            result.CountryCode,
+            result.MobileNumber,
+            result.IsMobileVerified,
+            result.IsEmailVerified,
             result.Role);
 
         return Ok(response);

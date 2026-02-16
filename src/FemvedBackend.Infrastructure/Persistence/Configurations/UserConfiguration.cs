@@ -27,18 +27,31 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(100)
             .IsRequired();
 
-        builder.Property(user => user.Country)
-            .HasMaxLength(2)
+        builder.Property(user => user.CountryCode)
+            .HasMaxLength(5)
             .IsRequired();
 
-        builder.Property(user => user.Currency)
-            .HasMaxLength(3)
+        builder.Property(user => user.MobileNumber)
+            .HasMaxLength(15)
             .IsRequired();
+
+        builder.Property(user => user.RoleId)
+            .HasDefaultValue((short)3);
+
+        builder.Property(user => user.IsMobileVerified)
+            .HasDefaultValue(false);
+
+        builder.Property(user => user.IsEmailVerified)
+            .HasDefaultValue(false);
 
         builder.Property(user => user.PasswordResetTokenHash)
             .HasMaxLength(512);
 
         builder.HasIndex(user => user.Email)
             .IsUnique();
+
+        builder.HasIndex(user => new { user.CountryCode, user.MobileNumber })
+            .IsUnique()
+            .HasFilter("mobile_number IS NOT NULL");
     }
 }

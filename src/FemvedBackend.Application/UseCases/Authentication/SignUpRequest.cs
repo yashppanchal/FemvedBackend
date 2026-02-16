@@ -1,5 +1,3 @@
-using FemvedBackend.Domain.Enums;
-
 namespace FemvedBackend.Application.UseCases.Authentication;
 
 /// <summary>
@@ -10,6 +8,5 @@ public sealed record SignUpRequest(
     string Password,
     string FirstName,
     string LastName,
-    string Country,
-    string Currency,
-    RoleType RoleType = RoleType.User);
+    string CountryCode,
+    string MobileNumber);

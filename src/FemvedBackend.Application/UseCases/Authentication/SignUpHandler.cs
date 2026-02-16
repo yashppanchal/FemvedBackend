@@ -11,7 +11,7 @@ namespace FemvedBackend.Application.UseCases.Authentication;
 public sealed class SignUpHandler
 {
     private readonly IUserRepository _userRepository;
-    private readonly IRoleRepository _roleRepository;
+    //private readonly IRoleRepository _roleRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenService _tokenService;
     private readonly ILogger<SignUpHandler> _logger;
@@ -24,7 +24,7 @@ public sealed class SignUpHandler
         ILogger<SignUpHandler> logger)
     {
         _userRepository = userRepository;
-        _roleRepository = roleRepository;
+        //_roleRepository = roleRepository;
         _passwordHasher = passwordHasher;
         _tokenService = tokenService;
         _logger = logger;
@@ -32,7 +32,7 @@ public sealed class SignUpHandler
 
     public async Task<SignUpResult> HandleAsync(SignUpRequest request, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Sign up attempt for {Email} with role {RoleType}", request.Email, request.RoleType);
+        _logger.LogInformation("Sign up attempt for {Email}", request.Email);
 
         var existing = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
         if (existing is not null)
@@ -41,9 +41,8 @@ public sealed class SignUpHandler
             throw new ValidationException("email", "User already exists.");
         }
 
-        var role = await _roleRepository.GetByTypeAsync(request.RoleType, cancellationToken)
-            ?? throw new ValidationException("role", "Role not found.");
-
+        //var role = await _roleRepository.GetByTypeAsync(request.RoleType, cancellationToken)
+        //    ?? throw new ValidationException("role", "Invalid role type.");
         var hash = _passwordHasher.HashPassword(request.Password);
 
         var user = new User
@@ -53,9 +52,11 @@ public sealed class SignUpHandler
             PasswordHash = hash,
             FirstName = request.FirstName,
             LastName = request.LastName,
-            Country = request.Country,
-            Currency = request.Currency,
-            RoleId = role.Id
+            CountryCode = request.CountryCode,
+            MobileNumber = request.MobileNumber,
+            RoleId = 3, //1. Admin, 2. Experts, 3. Users
+            IsMobileVerified = false,
+            IsEmailVerified = false
         };
 
         await _userRepository.AddAsync(user, cancellationToken);
@@ -65,9 +66,9 @@ public sealed class SignUpHandler
         var tokens = await _tokenService.GenerateTokensAsync(
             user.Id,
             user.Email,
-            new[] { role.Name },
-            user.Country,
-            user.Currency,
+            Array.Empty<string>(),
+            user.CountryCode,
+            user.MobileNumber,
             cancellationToken);
 
         return new SignUpResult(user.Id, user.Email, tokens);

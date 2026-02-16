@@ -28,12 +28,16 @@ public sealed class SignUpRequestValidator : AbstractValidator<SignUpRequest>
             .NotEmpty()
             .WithMessage("Last name is required.");
 
-        RuleFor(request => request.Country)
+        RuleFor(request => request.CountryCode)
             .NotEmpty()
-            .WithMessage("Country is required.");
+            .WithMessage("Country code is required.")
+            .Matches("^\\+\\d{1,4}$")
+            .WithMessage("Country code must be in the format +<digits>.");
 
-        RuleFor(request => request.Currency)
+        RuleFor(request => request.MobileNumber)
             .NotEmpty()
-            .WithMessage("Currency is required.");
+            .WithMessage("Mobile number is required.")
+            .Matches("^\\d{7,15}$")
+            .WithMessage("Mobile number must contain 7 to 15 digits.");
     }
 }

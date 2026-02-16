@@ -49,8 +49,8 @@ public sealed class SignInHandler
             user.Id,
             user.Email,
             roles,
-            user.Country,
-            user.Currency,
+            user.CountryCode,
+            user.MobileNumber,
             cancellationToken);
 
         _logger.LogInformation("Sign in succeeded for {UserId}", user.Id);

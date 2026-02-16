@@ -44,9 +44,8 @@ public sealed class AuthController : ControllerBase
             request.Password,
             request.FirstName,
             request.LastName,
-            request.Country,
-            request.Currency,
-            request.RoleType);
+            request.CountryCode,
+            request.MobileNumber);
 
         var result = await _signUpHandler.HandleAsync(useCaseRequest, cancellationToken);
 

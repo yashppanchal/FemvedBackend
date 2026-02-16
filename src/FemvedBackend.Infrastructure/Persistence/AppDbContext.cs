@@ -180,6 +180,8 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
         modelBuilder.Entity<User>(builder =>
         {
             builder.ToTable("users");
@@ -190,8 +192,10 @@ public class AppDbContext : DbContext
             builder.Property(user => user.PasswordHash).HasColumnName("password_hash");
             builder.Property(user => user.FirstName).HasColumnName("first_name");
             builder.Property(user => user.LastName).HasColumnName("last_name");
-            builder.Property(user => user.Country).HasColumnName("country_code");
-            builder.Property(user => user.Currency).HasColumnName("currency_code");
+            builder.Property(user => user.CountryCode).HasColumnName("country_code");
+            builder.Property(user => user.MobileNumber).HasColumnName("mobile_number");
+            builder.Property(user => user.IsMobileVerified).HasColumnName("is_mobile_verified");
+            builder.Property(user => user.IsEmailVerified).HasColumnName("is_email_verified");
             builder.Property(user => user.RoleId).HasColumnName("role_id");
 
             builder.Property<bool>("WhatsappOptIn").HasColumnName("whatsapp_opt_in");
@@ -212,8 +216,6 @@ public class AppDbContext : DbContext
             builder.Property(role => role.Name).HasColumnName("name");
 
             builder.Property<string>("Description").HasColumnName("description");
-
-            builder.Ignore(role => role.Type);
         });
 
         modelBuilder.Entity<ProductType>(builder =>

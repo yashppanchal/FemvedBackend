@@ -11,8 +11,8 @@ public interface ITokenService
         Guid userId,
         string email,
         IReadOnlyCollection<string> roles,
-        string country,
-        string currency,
+        string countryCode,
+        string mobileNumber,
         CancellationToken cancellationToken = default);
 
     Task<AuthTokenResult> RefreshAsync(string refreshToken, CancellationToken cancellationToken = default);

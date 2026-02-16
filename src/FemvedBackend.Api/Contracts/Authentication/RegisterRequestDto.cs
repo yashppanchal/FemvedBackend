@@ -1,5 +1,3 @@
-using FemvedBackend.Domain.Enums;
-
 namespace FemvedBackend.Api.Contracts.Authentication;
 
 /// <summary>
@@ -10,6 +8,5 @@ public sealed record RegisterRequestDto(
     string Password,
     string FirstName,
     string LastName,
-    string Country,
-    string Currency,
-    RoleType RoleType = RoleType.User);
+    string CountryCode,
+    string MobileNumber);

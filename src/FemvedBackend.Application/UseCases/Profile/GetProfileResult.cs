@@ -8,6 +8,8 @@ public sealed record GetProfileResult(
     string Email,
     string FirstName,
     string LastName,
-    string Country,
-    string Currency,
+    string CountryCode,
+    string MobileNumber,
+    bool IsMobileVerified,
+    bool IsEmailVerified,
     string Role);

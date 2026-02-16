@@ -9,8 +9,10 @@ public class User : Entity
     public string PasswordHash { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
-    public string Country { get; set; } = string.Empty;
-    public string Currency { get; set; } = string.Empty;
+    public string CountryCode { get; set; } = string.Empty;
+    public string MobileNumber { get; set; } = string.Empty;
+    public bool IsMobileVerified { get; set; }
+    public bool IsEmailVerified { get; set; }
     public string? PasswordResetTokenHash { get; set; }
     public DateTimeOffset? PasswordResetTokenExpiresAt { get; set; }
     public short RoleId { get; set; }

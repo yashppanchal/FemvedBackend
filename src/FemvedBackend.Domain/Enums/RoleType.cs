@@ -5,7 +5,7 @@ namespace FemvedBackend.Domain.Enums;
 /// </summary>
 public enum RoleType
 {
-    User = 0,
-    Experts = 1,
-    Admin = 2
+    User = 3,
+    Experts = 2,
+    Admin = 1
 }
