@@ -31,19 +31,31 @@ public sealed class SignInHandler
         _logger.LogInformation("Sign in attempt for {Email}", request.Email);
 
         var user = await _userRepository.GetByEmailWithRoleAsync(request.Email, cancellationToken);
+        _logger.LogInformation("Sign in debug: user null? {IsNull}", user is null);
         if (user is null)
         {
             _logger.LogWarning("Sign in failed for {Email}: user not found", request.Email);
             throw new ValidationException("credentials", "Invalid credentials.");
         }
 
-        if (!_passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
+        _logger.LogInformation("Sign in debug: user IsActive? {IsActive}", user.IsActive);
+        _logger.LogInformation("Sign in debug: role null? {IsRoleNull}", user.Role is null);
+
+        var isPasswordValid = _passwordHasher.VerifyPassword(request.Password, user.PasswordHash);
+        _logger.LogInformation("Sign in debug: password verification result {IsPasswordValid}", isPasswordValid);
+        if (!isPasswordValid)
         {
             _logger.LogWarning("Sign in failed for {Email}: invalid password", request.Email);
             throw new ValidationException("credentials", "Invalid credentials.");
         }
 
-        var roles = user.Role is null ? Array.Empty<string>() : new[] { user.Role.Name };
+        if (user.Role is null)
+        {
+            _logger.LogWarning("Sign in failed for {Email}: role not found", request.Email);
+            throw new ValidationException("credentials", "Invalid credentials.");
+        }
+
+        var roles = new[] { user.Role.Name };
 
         var tokens = await _tokenService.GenerateTokensAsync(
             user.Id,
@@ -55,6 +67,16 @@ public sealed class SignInHandler
 
         _logger.LogInformation("Sign in succeeded for {UserId}", user.Id);
 
-        return new SignInResult(user.Id, user.Email, tokens);
+        var userResult = new SignInUserResult(
+            user.Id,
+            user.Email,
+            user.FirstName,
+            user.LastName,
+            user.MobileNumber,
+            user.IsEmailVerified,
+            user.IsMobileVerified,
+            new SignInRoleResult(user.Role.Id, user.Role.Name));
+
+        return new SignInResult(tokens, userResult);
     }
 }

@@ -11,17 +11,20 @@ public sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
         builder.ToTable("roles");
         builder.HasKey(role => role.Id);
 
+        builder.Property(role => role.Id)
+            .HasColumnName("id")
+            .HasColumnType("smallint");
+
         builder.Property(role => role.Name)
+            .HasColumnName("name")
             .HasMaxLength(100)
             .IsRequired();
 
-        builder.Property(role => role.Type)
-            .IsRequired();
+        builder.Property(role => role.Description)
+            .HasColumnName("description")
+            .HasColumnType("text");
 
         builder.HasIndex(role => role.Name)
-            .IsUnique();
-
-        builder.HasIndex(role => role.Type)
             .IsUnique();
 
         builder.HasMany(role => role.Users)

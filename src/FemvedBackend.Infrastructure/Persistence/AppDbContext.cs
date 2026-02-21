@@ -212,10 +212,17 @@ public class AppDbContext : DbContext
             builder.ToTable("roles");
             builder.HasKey(role => role.Id);
 
-            builder.Property(role => role.Id).HasColumnName("id");
-            builder.Property(role => role.Name).HasColumnName("name");
+            builder.Property(role => role.Name)
+                .HasMaxLength(100)
+                .IsRequired();
 
-            builder.Property<string>("Description").HasColumnName("description");
+            builder.HasIndex(role => role.Name)
+                .IsUnique();
+
+            builder.HasMany(role => role.Users)
+                .WithOne(user => user.Role)
+                .HasForeignKey(user => user.RoleId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<ProductType>(builder =>

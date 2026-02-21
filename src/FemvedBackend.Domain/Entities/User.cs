@@ -11,6 +11,10 @@ public class User : Entity
     public string LastName { get; set; } = string.Empty;
     public string CountryCode { get; set; } = string.Empty;
     public string MobileNumber { get; set; } = string.Empty;
+    public bool WhatsappOptIn { get; set; }
+    public bool IsActive { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
     public bool IsMobileVerified { get; set; }
     public bool IsEmailVerified { get; set; }
     public string? PasswordResetTokenHash { get; set; }

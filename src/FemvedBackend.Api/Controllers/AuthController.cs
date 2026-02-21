@@ -1,4 +1,5 @@
 using FemvedBackend.Api.Contracts.Authentication;
+using FemvedBackend.Application.Exceptions;
 using FemvedBackend.Application.Identity;
 using FemvedBackend.Application.UseCases.Authentication;
 using Microsoft.AspNetCore.Mvc;
@@ -66,15 +67,30 @@ public sealed class AuthController : ControllerBase
         [FromBody] LoginRequestDto request,
         CancellationToken cancellationToken)
     {
-        var useCaseRequest = new SignInRequest(request.Email, request.Password);
-        var result = await _signInHandler.HandleAsync(useCaseRequest, cancellationToken);
+        try
+        {
+            var useCaseRequest = new SignInRequest(request.Email, request.Password);
+            var result = await _signInHandler.HandleAsync(useCaseRequest, cancellationToken);
 
-        var response = new LoginResponseDto(
-            result.UserId,
-            result.Email,
-            MapTokens(result.Tokens));
+            var response = new LoginResponseDto(
+                result.Tokens.AccessToken,
+                result.Tokens.AccessTokenExpiresAt.UtcDateTime,
+                new LoginUserDto(
+                    result.User.Id,
+                    result.User.Email,
+                    result.User.FirstName,
+                    result.User.LastName,
+                    result.User.MobileNumber,
+                    result.User.IsEmailVerified,
+                    result.User.IsMobileVerified,
+                    new LoginRoleDto(result.User.Role.Id, result.User.Role.Name)));
 
-        return Ok(response);
+            return Ok(response);
+        }
+        catch (UnauthorizedException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
     }
 
     /// <summary>

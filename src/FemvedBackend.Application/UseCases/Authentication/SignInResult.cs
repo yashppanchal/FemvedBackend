@@ -6,6 +6,25 @@ namespace FemvedBackend.Application.UseCases.Authentication;
 /// Represents the outcome of a sign-in attempt.
 /// </summary>
 public sealed record SignInResult(
-    Guid UserId,
+    AuthTokenResult Tokens,
+    SignInUserResult User);
+
+/// <summary>
+/// Represents the authenticated user.
+/// </summary>
+public sealed record SignInUserResult(
+    Guid Id,
     string Email,
-    AuthTokenResult Tokens);
+    string FirstName,
+    string LastName,
+    string MobileNumber,
+    bool IsEmailVerified,
+    bool IsMobileVerified,
+    SignInRoleResult Role);
+
+/// <summary>
+/// Represents the user's role.
+/// </summary>
+public sealed record SignInRoleResult(
+    short Id,
+    string Name);

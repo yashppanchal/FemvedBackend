@@ -39,7 +39,7 @@ public sealed class UserRepository : IUserRepository
     {
         return _dbContext.Users
             .Include(user => user.Role)
-            .FirstOrDefaultAsync(user => user.Email == email, cancellationToken);
+            .FirstOrDefaultAsync(user => user.Email == email && EF.Property<bool>(user, "IsActive"), cancellationToken);
     }
 
     public async Task<IReadOnlyList<User>> ListAsync(CancellationToken cancellationToken = default)
