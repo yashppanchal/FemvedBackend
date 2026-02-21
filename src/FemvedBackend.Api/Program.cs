@@ -103,6 +103,15 @@ builder.Logging.AddSerilog(Log.Logger, dispose: true);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DefaultCorsPolicy", policy =>
+    {
+        policy.AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -319,6 +328,8 @@ app.UseSwaggerUI(options =>
 //}
 
 app.UseHttpsRedirection();
+
+app.UseCors("DefaultCorsPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();
